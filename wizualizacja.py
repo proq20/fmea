@@ -227,20 +227,7 @@ def modal_edit_user(u_data):
                              (new_name, new_role, u_data['username']))
             conn.commit(); conn.close()
             st.success("Zaktualizowano!"); st.rerun()
-# --- APP START ---
-init_db()
-if 'auth' not in st.session_state: st.session_state.auth = False
 
-if not st.session_state.auth:
-    _, col, _ = st.columns([1, 1.2, 1])
-    with col:
-        st.markdown("<div class='main-logo'><h1>FMEA</h1>SYSTEM</div>", unsafe_allow_html=True)
-        u = st.text_input("Użytkownik"); p = st.text_input("Hasło", type="password")
-        if st.button("ZALOGUJ", use_container_width=True):
-            hp = hashlib.sha256(p.encode()).hexdigest()
-            conn = sqlite3.connect(DB_NAME); res = conn.execute("SELECT role FROM users WHERE username=? AND password=?", (u, hp)).fetchone(); conn.close()
-            if res: st.session_state.auth, st.session_state.role, st.session_state.user = True, res[0], u; st.rerun()
-    st.stop()
 
 # --- SIDEBAR ---
 with st.sidebar:
@@ -361,6 +348,7 @@ else:
                     if r[13].button("✖", key=f"d_{row['id']}"):
 
                         conn = sqlite3.connect(DB_NAME); conn.execute(f"DELETE FROM wpisy WHERE id={row['id']}"); conn.commit(); conn.close(); st.rerun()
+
 
 
 

@@ -9,7 +9,12 @@ from sqlalchemy import text
 # --- KONFIGURACJA BAZY ---
 DB_URL = st.secrets["DB_URL"]
 # Dodajemy pool_pre_ping, żeby sprawdzał połączenie przed użyciem
-engine = sqlalchemy.create_engine(DB_URL, pool_pre_ping=True)
+engine = sqlalchemy.create_engine(
+    DB_URL, 
+    pool_pre_ping=True,
+    pool_recycle=300,
+    connect_args={"tcp_keepalive": True}
+)
 
 def get_data(query, params=None):
     with engine.connect() as conn:
@@ -220,3 +225,4 @@ else:
                     if r[12].button("📝", key=f"e_{row['id']}"): modal_edycja_wpisu(row)
                     if r[13].button("✖", key=f"del_{row['id']}"):
                         run_query("DELETE FROM wpisy WHERE id=:id", {"id": row['id']}); st.rerun()
+

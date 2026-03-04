@@ -6,6 +6,23 @@ import os
 from fpdf import FPDF
 import sqlalchemy
 
+from sqlalchemy import text
+
+# Połączenie z Supabase (URL musi być w Secrets na Streamlit Cloud)
+# Format w Secrets: DB_URL = "postgresql://postgres:haslo@db.xyz.supabase.co:5432/postgres"
+DB_URL = st.secrets["DB_URL"]
+engine = sqlalchemy.create_engine(DB_URL)
+
+# Pomocnicza funkcja do pobierania danych (zastępuje pd.read_sql)
+def get_data(query, params=None):
+    with engine.connect() as conn:
+        return pd.read_sql(text(query), conn, params=params)
+
+# Pomocnicza funkcja do zapisu (zastępuje conn.execute)
+def run_query(query, params=None):
+    with engine.begin() as conn:
+        conn.execute(text(query), params)
+
 # --- KONFIGURACJA ---
 st.set_page_config(page_title="FMEA Industrial System", layout="wide")
 DB_NAME = "fmea_industrial_v5.db"
@@ -344,6 +361,7 @@ else:
                     if r[13].button("✖", key=f"d_{row['id']}"):
 
                         conn = sqlite3.connect(DB_NAME); conn.execute(f"DELETE FROM wpisy WHERE id={row['id']}"); conn.commit(); conn.close(); st.rerun()
+
 
 
 

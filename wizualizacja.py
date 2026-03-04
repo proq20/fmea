@@ -80,7 +80,22 @@ def generate_pdf(df, project_name, user_name):
         pdf.cell(w[5], 8, str(row['o']), border=1, align='C')
         pdf.cell(w[6], 8, str(row['detekcja'])[:25], border=1)
         pdf.cell(w[7], 8, str(row['d']), border=1, align='C')
-        pdf.cell(w[8], 8, str(row['ap']), border=1, align='C')
+      # --- KOLOROWANIE AP ---
+        ap_val = str(row['ap']).upper()
+        if ap_val == "H":
+            pdf.set_fill_color(255, 200, 200) # Jasny czerwony
+        elif ap_val == "M":
+            pdf.set_fill_color(255, 255, 200) # Jasny żółty
+        elif ap_val == "L":
+            pdf.set_fill_color(200, 255, 200) # Jasny zielony
+        else:
+            pdf.set_fill_color(255, 255, 255) # Biały dla n/a
+
+        # Rysowanie komórki AP (ustaw szerokość taką, jaką masz w nagłówku, np. 10)
+        pdf.cell(10, 8, ap_val, border=1, align='C', fill=True)
+        
+        # WAŻNE: Po narysowaniu komórki AP zresetuj kolor tła na biały dla reszty wiersza
+        pdf.set_fill_color(255, 255, 255)
         pdf.cell(w[9], 8, str(row['dzialanie'])[:45], border=1)
         pdf.cell(w[10], 8, str(row['kto'])[:12], border=1, align='C')
         pdf.cell(w[11], 8, str(row['termin'])[:12], border=1, align='C'); pdf.ln()
@@ -329,3 +344,4 @@ else:
                     if r[13].button("✖", key=f"d_{row['id']}"):
 
                         conn = sqlite3.connect(DB_NAME); conn.execute(f"DELETE FROM wpisy WHERE id={row['id']}"); conn.commit(); conn.close(); st.rerun()
+

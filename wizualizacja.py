@@ -43,16 +43,16 @@ class FMEA_PDF(FPDF):
     def __init__(self, user_name, **kwargs):
         super().__init__(**kwargs)
         self.user_name = user_name
-        path = "C:\\Windows\\Fonts\\arial.ttf"
-        path_b = "C:\\Windows\\Fonts\\arialbd.ttf"
-        if os.path.exists(path):
-            self.add_font('ArialPL', '', path, uni=True)
-            if os.path.exists(path_b): self.add_font('ArialPL', 'B', path_b, uni=True)
-            self.pl_font = 'ArialPL'
-        else: self.pl_font = 'Helvetica'
-    def footer(self):
-        self.set_y(-15); self.set_font(self.pl_font, '', 7)
-        self.cell(0, 10, f"Operator: {self.user_name} | FMEA SYSTEM", 0, 0, 'R')
+        # Próba załadowania Arial, jeśli nie ma - używamy standardowej Helvetici
+        try:
+            path = "C:\\Windows\\Fonts\\arial.ttf"
+            if os.path.exists(path):
+                self.add_font('ArialPL', '', path, uni=True)
+                self.pl_font = 'ArialPL'
+            else:
+                self.pl_font = 'Helvetica' # Standardowa czcionka Linuxa
+        except:
+            self.pl_font = 'Helvetica'
 
 def generate_pdf(df, project_name, user_name):
     pdf = FMEA_PDF(user_name=user_name, orientation='L', unit='mm', format='A4')
@@ -327,4 +327,5 @@ else:
                         modal_edycja_wpisu(row)
                     # --- USUWANIE ---
                     if r[13].button("✖", key=f"d_{row['id']}"):
+
                         conn = sqlite3.connect(DB_NAME); conn.execute(f"DELETE FROM wpisy WHERE id={row['id']}"); conn.commit(); conn.close(); st.rerun()

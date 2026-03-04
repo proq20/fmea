@@ -67,7 +67,7 @@ def generate_pdf(df, project_name, user_name):
             current_op = row['nazwa']; pdf.ln(4)
             pdf.set_font(f, 'B', 8); pdf.set_fill_color(226, 232, 240)
             pdf.cell(0, 8, f" KROK: {row['nazwa']}", border='LTR', ln=True, fill=True)
-            headers = ["Wada", "Skutek", "S", "Przyczyna", "Prewencja", "O", "Detekcja", "D", "AP", "Dzialanie", "Kto", "Termin"]
+            headers = ["Wada", "Skutek", "S", "Przyczyna", "Prewencja", "O", "Detekcja", "D", "AP", "Zalecane dzialania", "Odpowiedzialny", "Termin"]
             pdf.set_font(f, 'B', 6); pdf.set_fill_color(241, 245, 249)
             for i, h in enumerate(headers): pdf.cell(w[i], 7, h, border=1, align='C', fill=True)
             pdf.ln()
@@ -344,4 +344,5 @@ else:
                     if r[13].button("✖", key=f"d_{row['id']}"):
 
                         conn = sqlite3.connect(DB_NAME); conn.execute(f"DELETE FROM wpisy WHERE id={row['id']}"); conn.commit(); conn.close(); st.rerun()
+
 

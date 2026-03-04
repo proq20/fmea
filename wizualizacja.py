@@ -4,6 +4,7 @@ import sqlite3
 import hashlib
 import os
 from fpdf import FPDF
+import sqlalchemy
 
 # --- KONFIGURACJA ---
 st.set_page_config(page_title="FMEA Industrial System", layout="wide")
@@ -102,20 +103,19 @@ def generate_pdf(df, project_name, user_name):
     return bytes(pdf.output())
 
 # --- DATABASE ---
-def get_vda_ap(s, o, d):
-    if s >= 9: return "H" if o >= 2 or d >= 2 else "M"
-    if s >= 7: return "H" if o >= 4 or d >= 4 else "M"
-    return "L"
 
-def init_db():
-    conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-    c.execute('CREATE TABLE IF NOT EXISTS projekty (id INTEGER PRIMARY KEY, nazwa TEXT UNIQUE)')
-    c.execute('CREATE TABLE IF NOT EXISTS operacje (id INTEGER PRIMARY KEY, p_id INTEGER, nazwa TEXT)')
-    c.execute('CREATE TABLE IF NOT EXISTS wpisy (id INTEGER PRIMARY KEY AUTOINCREMENT, op_id INTEGER, wada TEXT, skutek TEXT, s INTEGER, przyczyna TEXT, prewencja TEXT, o INTEGER, detekcja TEXT, d INTEGER, ap TEXT, dzialanie TEXT, kto TEXT, termin TEXT)')
-    c.execute('CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, password TEXT, role TEXT)')
-    hp = hashlib.sha256("admin123".encode()).hexdigest()
-    c.execute("INSERT OR REPLACE INTO users VALUES ('admin', ?, 'admin')", (hp,))
-    conn.commit(); conn.close()
+
+# Pobieranie URL z bezpiecznych ustawień Streamlit
+DB_URL = st.secrets["DB_URL"]
+engine = sqlalchemy.create_engine(DB_URL)
+
+def run_query(query, params=None, is_select=False):
+    with engine.connect() as conn:
+        if is_select:
+            return pd.read_sql(query, conn, params=params)
+        else:
+            conn.execute(sqlalchemy.text(query), params)
+            conn.commit()
 
 # --- MODALS ---
 
@@ -344,5 +344,6 @@ else:
                     if r[13].button("✖", key=f"d_{row['id']}"):
 
                         conn = sqlite3.connect(DB_NAME); conn.execute(f"DELETE FROM wpisy WHERE id={row['id']}"); conn.commit(); conn.close(); st.rerun()
+
 
 
